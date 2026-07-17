@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APA 7th Citation Generator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        
+        .hanging-indent {
+            padding-left: 2em;
+            text-indent: -2em;
+            margin-bottom: 1em;
+            line-height: 1.6;
+        }
+
+        .hanging-indent i {
+            /* Ensures italics inside citations work properly */
+            font-style: italic;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .toast-animate {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+        
+        .animate-sparkle {
+            animation: sparkle 1.5s infinite;
+        }
+
+        /* Custom Scrollbar for list container */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white py-6 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <i class="fas fa-quote-right"></i> APA 7th Citation Generator
+                </h1>
+                <p class="text-indigo-200 text-sm mt-1">Smart formatting, auto-extraction, and seamless exporting.</p>
+            </div>
+            <div class="hidden sm:block text-indigo-200">
+                <i class="fas fa-book-open text-3xl opacity-50"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT COLUMN: Input Form -->
+            <div class="lg:col-span-5 bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-fit">
+                
+                <h2 class="text-lg font-semibold border-b pb-3 mb-5 flex items-center gap-2 text-gray-800">
+                    <i class="fas fa-plus-circle text-indigo-500"></i> Add Reference
+                </h2>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-gray-200 mb-5">
+                    <button id="tab-structured" class="w-1/2 py-2 text-center text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 focus:outline-none transition-colors">
+                        <i class="fas fa-table-list mr-1"></i> Fill Form
+                    </button>
+                    <button id="tab-pasted" class="w-1/2 py-2 text-center text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 focus:outline-none transition-colors">
+                        <i class="fas fa-paste mr-1"></i> Paste Text
+                    </button>
+                </div>
+                
+                <form id="citationForm" class="space-y-4 flex-grow flex flex-col">
+                    
+                    <!-- STRUCTURED MODE CONTAINER -->
+                    <div id="structuredMode" class="space-y-4">
+                        <!-- Source Type -->
+                        <div>
+                            <label for="sourceType" class="block text-sm font-medium text-gray-700 mb-1">Source Type</label>
+                            <select id="sourceType" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="journal">Journal Article</option>
+                                <option value="book">Book</option>
+                                <option value="website">Website</option>
+                            </select>
+                        </div>
+
+                        <!-- Authors -->
+                        <div>
+                            <div class="flex justify-between items-end mb-1">
+                                <label for="authors" class="block text-sm font-medium text-gray-700">Author(s) *</label>
+                            </div>
+                            <div class="relative">
+                                <textarea id="authors" rows="2" placeholder="e.g., Smith, J., or Jane Smith) and click Auto-Format" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-[110px] focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm" required></textarea>
+                                <button type="button" id="autoFormatBtn" class="absolute top-2 right-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-medium py-1 px-2 rounded transition-colors shadow-sm flex items-center">
+                                    <i class="fas fa-magic mr-1"></i> Format
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title of Work *</label>
+                            <textarea id="title" rows="2" placeholder="Article, Chapter, or Webpage title" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm" required></textarea>
+                        </div>
+
+                        <!-- Source Title (Journal Name, Book Title, Website Name) -->
+                        <div>
+                            <label for="sourceTitle" class="block text-sm font-medium text-gray-700 mb-1" id="sourceTitleLabel">Journal Name</label>
+                            <input type="text" id="sourceTitle" placeholder="e.g., Journal of Advanced Sciences" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Year -->
+                            <div>
+                                <label for="year" class="block text-sm font-medium text-gray-700 mb-1">Year *</label>
+                                <input type="text" id="year" placeholder="e.g., 2024 or n.d." class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm" required>
+                            </div>
+                            
+                            <!-- Volume (Journal Only) -->
+                            <div id="volumeGroup">
+                                <label for="volume" class="block text-sm font-medium text-gray-700 mb-1">Volume</label>
+                                <input type="text" id="volume" placeholder="e.g., 12" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4" id="issuePagesGroup">
+                            <!-- Issue (Journal Only) -->
+                            <div>
+                                <label for="issue" class="block text-sm font-medium text-gray-700 mb-1">Issue</label>
+                                <input type="text" id="issue" placeholder="e.g., 3" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            </div>
+                            
+                            <!-- Pages (Journal/Book) -->
+                            <div>
+                                <label for="pages" class="block text-sm font-medium text-gray-700 mb-1">Pages / Article #</label>
+                                <input type="text" id="pages" placeholder="e.g., 45-60 or 102114" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            </div>
+                        </div>
+
+                        <!-- URL / DOI -->
+                        <div>
+                            <label for="url" class="block text-sm font-medium text-gray-700 mb-1">URL or DOI</label>
+                            <input type="url" id="url" placeholder="https://doi.org/..." class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- PASTED MODE CONTAINER -->
+                    <div id="pastedMode" class="hidden space-y-4">
+                        <div>
+                            <label for="pastedText" class="block text-sm font-medium text-gray-700 mb-1">Paste raw citation data or existing citation *</label>
+                            <textarea id="pastedText" rows="10" placeholder="Paste giant text block here (including authors, title, journal, abstract, keywords, DOI...)" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm"></textarea>
+                            
+                            <div class="bg-indigo-50 rounded-md p-3 mt-3 border border-indigo-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <div class="text-xs text-gray-600">
+                                    <span class="font-semibold text-indigo-700"><i class="fas fa-lightbulb"></i> Smart Extract:</span> We will automatically pull the authors, title, year, volume, and DOI from raw academic text and populate the form for you!
+                                </div>
+                                <button type="button" id="smartParseBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-1.5 px-4 rounded-md transition-colors shadow-sm flex items-center text-sm whitespace-nowrap">
+                                    <i class="fas fa-wand-magic-sparkles mr-2 animate-sparkle"></i> Smart Extract
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Miscellaneous (Shared between both modes) -->
+                    <div class="mt-4">
+                        <label for="misc" class="block text-sm font-medium text-gray-700 mb-1">Misc. Notes (Optional)</label>
+                        <input type="text" id="misc" placeholder="Personal notes, tags..." class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4 mt-auto">
+                        <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-2.5 px-4 rounded-md shadow-md transition-colors flex justify-center items-center gap-2">
+                            <i class="fas fa-check-circle"></i> <span id="submitBtnText">Generate & Add to List</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- RIGHT COLUMN: Output List -->
+            <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-fit lg:h-[calc(100vh-140px)]">
+                
+                <!-- List Header -->
+                <div class="p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-gray-50 rounded-t-xl">
+                    <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-800">
+                        <i class="fas fa-list text-indigo-500"></i> Reference List
+                    </h2>
+                    <div class="flex gap-2 flex-wrap">
+                        <button id="exportBtn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium py-1.5 px-3 rounded text-sm transition-colors flex items-center">
+                            <i class="fas fa-file-export mr-1.5"></i> Export 
+                        </button>
+                        <button id="copyAllBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-1.5 px-3 rounded text-sm transition-colors flex items-center">
+                            <i class="fas fa-copy mr-1.5"></i> Copy All
+                        </button>
+                        <button id="clearAllBtn" class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded text-sm transition-colors flex items-center">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- List Container -->
+                <div class="flex-grow p-6 overflow-y-auto custom-scrollbar relative bg-white" id="listContainer">
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="h-full flex flex-col items-center justify-center text-gray-400 py-10">
+                        <i class="fas fa-folder-open text-5xl mb-4 text-gray-300"></i>
+                        <p class="text-center font-medium">Your reference list is empty.</p>
+                        <p class="text-center text-sm mt-2 max-w-xs">Fill out the form or paste a citation on the left to add your first reference. It will auto-save!</p>
+                    </div>
+
+                    <!-- Generated List -->
+                    <div id="referenceList" class="hidden">
+                        <!-- Citations will be injected here -->
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-3 border-t border-gray-200 text-center text-xs text-gray-500 rounded-b-xl">
+                    Citations are automatically sorted alphabetically. Changes are saved locally.
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // --- State Management ---
+        let references = [];
+        const LOCAL_STORAGE_KEY = 'apa_citations_db';
+
+        // --- DOM Elements ---
+        const form = document.getElementById('citationForm');
+        const sourceType = document.getElementById('sourceType');
+        const volumeGroup = document.getElementById('volumeGroup');
+        const issuePagesGroup = document.getElementById('issuePagesGroup');
+        const sourceTitleLabel = document.getElementById('sourceTitleLabel');
+        const emptyState = document.getElementById('emptyState');
+        const referenceList = document.getElementById('referenceList');
+        const copyAllBtn = document.getElementById('copyAllBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        
+        // Tab UI Elements
+        const tabStructured = document.getElementById('tab-structured');
+        const tabPasted = document.getElementById('tab-pasted');
+        const structuredMode = document.getElementById('structuredMode');
+        const pastedMode = document.getElementById('pastedMode');
+        const pastedTextInput = document.getElementById('pastedText');
+        const submitBtnText = document.getElementById('submitBtnText');
+        const smartParseBtn = document.getElementById('smartParseBtn');
+        const autoFormatBtn = document.getElementById('autoFormatBtn');
+        const authorsInput = document.getElementById('authors');
+
+        let currentInputMode = 'structured';
+
+        // --- Initialization ---
+        function init() {
+            loadFromLocalStorage();
+            updateFormFields(); // Initialize field visibility
+            renderList();
+        }
+
+        // --- Tab Switching Logic ---
+        function switchTab(tab) {
+            currentInputMode = tab;
+            if (tab === 'structured') {
+                tabStructured.classList.replace('border-transparent', 'border-indigo-600');
+                tabStructured.classList.replace('text-gray-500', 'text-indigo-600');
+                tabPasted.classList.replace('border-indigo-600', 'border-transparent');
+                tabPasted.classList.replace('text-indigo-600', 'text-gray-500');
+                
+                structuredMode.classList.remove('hidden');
+                pastedMode.classList.add('hidden');
+                
+                // Adjust required attributes
+                document.getElementById('authors').setAttribute('required', 'true');
+                document.getElementById('title').setAttribute('required', 'true');
+                document.getElementById('year').setAttribute('required', 'true');
+                pastedTextInput.removeAttribute('required');
+                
+                submitBtnText.textContent = "Generate & Add to List";
+            } else {
+                tabPasted.classList.replace('border-transparent', 'border-indigo-600');
+                tabPasted.classList.replace('text-gray-500', 'text-indigo-600');
+                tabStructured.classList.replace('border-indigo-600', 'border-transparent');
+                tabStructured.classList.replace('text-indigo-600', 'text-gray-500');
+                
+                pastedMode.classList.remove('hidden');
+                structuredMode.classList.add('hidden');
+                
+                // Adjust required attributes
+                pastedTextInput.setAttribute('required', 'true');
+                document.getElementById('authors').removeAttribute('required');
+                document.getElementById('title').removeAttribute('required');
+                document.getElementById('year').removeAttribute('required');
+                
+                submitBtnText.textContent = "Add Pasted Citation Directly";
+            }
+        }
+
+        tabStructured.addEventListener('click', () => switchTab('structured'));
+        tabPasted.addEventListener('click', () => switchTab('pasted'));
+
+        // --- STREAMING_CHUNK:Dynamic form fields based on Source Type ---
+        // Dynamic Fields based on Source Type
+        function updateFormFields() {
+            const type = sourceType.value;
+            if (type === 'journal') {
+                volumeGroup.style.display = 'block';
+                issuePagesGroup.style.display = 'grid';
+                sourceTitleLabel.textContent = 'Journal Name';
+            } else if (type === 'book') {
+                volumeGroup.style.display = 'none';
+                issuePagesGroup.style.display = 'grid'; // Still need pages sometimes, issue can be hidden but keeping layout simple
+                document.getElementById('issue').parentElement.style.display = 'none';
+                document.getElementById('pages').parentElement.style.gridColumn = 'span 2';
+                sourceTitleLabel.textContent = 'Publisher';
+            } else if (type === 'website') {
+                volumeGroup.style.display = 'none';
+                issuePagesGroup.style.display = 'none';
+                sourceTitleLabel.textContent = 'Website Name';
+            }
+        }
+
+        sourceType.addEventListener('change', updateFormFields);
+
+        // --- STREAMING_CHUNK:Core Author auto-formatting algorithm ---
+        // Author Auto-Formatter Logic
+        function formatAPAAuthors(rawText) {
+            let text = rawText.trim();
+            if (!text) return "";
+
+            // Check if it already looks like APA (contains "&" or ends with a period/initial)
+            if (text.includes('&') || /\.\s*$/.test(text)) {
+                return text; 
+            }
+
+            // Clean common paste artifacts (like "and")
+            text = text.replace(/\s+and\s+/gi, ', ');
+            
+            // Split by comma or newline (often lists are comma separated)
+            let rawAuthors = text.split(/,|\n/).map(a => a.trim()).filter(a => a.length > 0);
+            
+            let formattedAuthors = [];
+
+            for (let i = 0; i < rawAuthors.length; i++) {
+                let nameParts = rawAuthors[i].split(/\s+/);
+                
+                if (nameParts.length === 1) {
+                    // Single word name (e.g., organization or mononym)
+                    formattedAuthors.push(nameParts[0]);
+                } else {
+                    // Standard First Last name
+                    let lastName = nameParts.pop(); // Last word is last name
+                    
+                    // The rest are first/middle names. Convert to initials.
+                    let initials = nameParts.map(part => part.charAt(0).toUpperCase() + '.').join(' ');
+                    
+                    formattedAuthors.push(`${lastName}, ${initials}`);
+                }
+            }
+
+            if (formattedAuthors.length === 1) return formattedAuthors[0];
+            
+            if (formattedAuthors.length > 20) {
+                 // APA 7 handles > 20 authors by listing first 19 ... Last author.
+                 let first19 = formattedAuthors.slice(0, 19).join(', ');
+                 let last = formattedAuthors[formattedAuthors.length - 1];
+                 return `${first19}, ... ${last}`;
+            }
+
+            // Normal formatting (2 to 20 authors)
+            let lastAuthor = formattedAuthors.pop();
+            return formattedAuthors.join(', ') + ', & ' + lastAuthor;
+        }
+
+        autoFormatBtn.addEventListener('click', () => {
+            const currentText = authorsInput.value;
+            if (!currentText.trim()) {
+                showToast("Please enter names first.", false);
+                return;
+            }
+            const formatted = formatAPAAuthors(currentText);
+            if (currentText !== formatted) {
+                authorsInput.value = formatted;
+                showToast('Authors formatted successfully!');
+            } else {
+                showToast('Text already formatted or unrecognizable.', false);
+            }
+        });
+
+        // --- STREAMING_CHUNK:Smart Extract algorithm for parsing complex text blocks ---
+        // Smart Extract Logic (Parses giant raw text blocks)
+        smartParseBtn.addEventListener('click', () => {
+            const rawText = pastedTextInput.value.trim();
+            if (!rawText) {
+                showToast('Please paste text first (e.g., from an academic database).', false);
+                return;
+            }
+
+            // 0. Detect if the text is ALREADY a formatted APA citation
+            // Looks for: Authors (YYYY). 
+            const isFormattedCitation = /^[^\n]+\(\d{4}[a-z]?\)\.\s/i.test(rawText) && rawText.split('\n').length <= 4;
+
+            if (isFormattedCitation) {
+                // Parse as an existing, clean APA citation
+                const authorYearMatch = rawText.match(/^(.*?)\s*\((\d{4}[a-z]?)\)\.\s*(.*)$/si);
+                
+                if (authorYearMatch) {
+                    const authors = authorYearMatch[1].trim();
+                    const year = authorYearMatch[2].trim();
+                    let remainder = authorYearMatch[3].trim();
+
+                    // Extract URL/DOI from the end
+                    let url = '';
+                    const urlMatch = remainder.match(/(https?:\/\/[^\s]+)$/);
+                    if (urlMatch) {
+                        url = urlMatch[1];
+                        remainder = remainder.replace(urlMatch[1], '').trim();
+                    }
+
+                    // Extract Title (usually ends with a period, question mark, or exclamation mark)
+                    const titleMatch = remainder.match(/^(.*?[.?!])\s+(.*)$/s);
+                    let title = '';
+                    let journalInfo = remainder;
+                    
+                    if (titleMatch) {
+                        title = titleMatch[1].trim();
+                        journalInfo = titleMatch[2].trim();
+                    } else {
+                        // Fallback if punctuation is missing
+                        title = remainder;
+                        journalInfo = '';
+                    }
+
+                    // Parse Journal Info (e.g. "Journal Name, 4(2(136)), 70–80.")
+                    let sourceTitle = '';
+                    let volume = '';
+                    let issue = '';
+                    let pages = '';
+
+                    if (journalInfo) {
+                        const journalParts = journalInfo.split(',');
+                        if (journalParts.length >= 1) sourceTitle = journalParts[0].trim().replace(/\.$/, '');
+                        if (journalParts.length >= 2) {
+                            const volIssue = journalParts[1].trim();
+                            const viMatch = volIssue.match(/(\d+)\s*(?:\((.*?)\))?/);
+                            if (viMatch) {
+                                volume = viMatch[1];
+                                if (viMatch[2]) issue = viMatch[2];
+                            }
+                        }
+                        if (journalParts.length >= 3) pages = journalParts[2].trim().replace(/\.$/, '');
+                    }
+
+                    // Populate Form
+                    document.getElementById('sourceType').value = 'journal';
+                    updateFormFields();
+                    document.getElementById('authors').value = authors;
+                    document.getElementById('year').value = year;
+                    document.getElementById('title').value = title.replace(/[.?!]$/, ''); // Strip trailing period for form
+                    document.getElementById('sourceTitle').value = sourceTitle;
+                    document.getElementById('volume').value = volume;
+                    document.getElementById('issue').value = issue;
+                    document.getElementById('pages').value = pages;
+                    document.getElementById('url').value = url;
+
+                    pastedTextInput.value = '';
+                    switchTab('structured');
+                    showToast('Formatted citation recognized and extracted! Please review.');
+                    return; // Exit here so it doesn't run the messy text parser
+                }
+            }
+
+            // 1. Remove Abstract and Keywords blocks aggressively
+            let cleanedText = rawText.replace(/Abstract[\s\S]*?(?=Keywords:|$)/gi, '');
+            cleanedText = cleanedText.replace(/Keywords[\s\S]*/gi, '');
+            cleanedText = cleanedText.trim();
+
+            // 2. Extract URLs/DOIs (Prioritize DOI)
+            let doiMatch = cleanedText.match(/(https?:\/\/(?:dx\.)?doi\.org\/[^\s,)]+)/i);
+            let urlMatch = cleanedText.match(/(https?:\/\/[^\s,)]+)/i);
+            let url = doiMatch ? doiMatch[1] : (urlMatch ? urlMatch[1] : '');
+            if (url.endsWith('.')) url = url.slice(0, -1);
+            
+            // Remove all URLs from text to prevent confusing the parser
+            cleanedText = cleanedText.replace(/(https?:\/\/[^\s,)]+)/gi, ''); 
+
+            // 3. Extract Year (19XX or 20XX)
+            let yearMatch = cleanedText.match(/\b(19|20)\d{2}\b/);
+            let year = yearMatch ? yearMatch[0] : '';
+            if (year) cleanedText = cleanedText.replace(year, '');
+
+            // 4. Extract Volume (Look for "Volume XX", "Vol XX", or just assume leading number after journal)
+            let volMatch = cleanedText.match(/Volume\s+(\d+)/i) || cleanedText.match(/Vol\.?\s+(\d+)/i);
+            let volume = volMatch ? volMatch[1] : '';
+            if (volMatch) cleanedText = cleanedText.replace(volMatch[0], '');
+
+            // 5. Extract Pages/Article Number (5+ digits like 102114 or XXX-YYY)
+            let pagesMatch = cleanedText.match(/\b\d{5,7}\b|\b\d+\s*-\s*\d+\b/);
+            let pages = pagesMatch ? pagesMatch[0] : '';
+            if (pagesMatch) cleanedText = cleanedText.replace(pagesMatch[0], '');
+
+            // 6. Clean up leftover cruft
+            cleanedText = cleanedText.replace(/ISSN\s*[\d-]+/gi, '');
+            cleanedText = cleanedText.replace(/[()]/g, ''); // Remove parentheses left behind by URLs
+
+            // 7. Split remaining text into lines to deduce Authors, Title, Journal
+            let lines = cleanedText.split('\n')
+                .map(l => l.trim().replace(/,$/, '')) // remove trailing commas
+                .filter(l => l.length > 2); // filter empty lines
+
+            let authors = lines[0] || '';
+            let title = lines[1] || '';
+            let sourceTitle = lines[2] || '';
+
+            // Apply formatting to extracted authors
+            let formattedAuthors = formatAPAAuthors(authors);
+
+            // 8. Fill structured form
+            document.getElementById('sourceType').value = 'journal'; // Default assumption for bulk text
+            updateFormFields();
+
+            document.getElementById('authors').value = formattedAuthors;
+            document.getElementById('title').value = title;
+            document.getElementById('sourceTitle').value = sourceTitle;
+            document.getElementById('year').value = year;
+            document.getElementById('volume').value = volume;
+            document.getElementById('pages').value = pages;
+            document.getElementById('url').value = url;
+            
+            // Clear paste box and switch tabs
+            pastedTextInput.value = '';
+            switchTab('structured');
+            
+            showToast('Data extracted successfully! Please review the fields.');
+        });
+
+        // --- STREAMING_CHUNK:Citation string assembly logic (Journal, Book, Web) ---
+        // Citation Assembly
+        function generateCitation(data) {
+            let citation = '';
+            
+            // Ensure title ends with punctuation
+            let titleText = data.title;
+            if (titleText && !/[.?!]$/.test(titleText)) {
+                titleText += '.';
+            }
+
+            if (data.type === 'journal') {
+                // Format: Author, A. A. (Year). Title of article. *Title of Periodical*, *Volume*(Issue), Pages. URL
+                citation = `${data.authors} (${data.year}). ${titleText} <i>${data.sourceTitle}</i>`;
+                
+                if (data.volume) {
+                    citation += `, <i>${data.volume}</i>`;
+                }
+                if (data.issue) {
+                    citation += `(${data.issue})`;
+                }
+                if (data.pages) {
+                    citation += `, ${data.pages}`;
+                }
+                citation += '.';
+                
+                if (data.url) {
+                    citation += ` ${data.url}`;
+                }
+            } 
+            else if (data.type === 'book') {
+                // Format: Author, A. A. (Year). *Title of work*. Publisher. URL
+                citation = `${data.authors} (${data.year}). <i>${titleText}</i>`;
+                if (data.sourceTitle) {
+                    citation += ` ${data.sourceTitle}.`;
+                }
+                if (data.url) {
+                    citation += ` ${data.url}`;
+                }
+            } 
+            else if (data.type === 'website') {
+                // Format: Author, A. A. (Year). *Title of work*. Site Name. URL
+                citation = `${data.authors} (${data.year}). <i>${titleText}</i>`;
+                if (data.sourceTitle) {
+                    citation += ` ${data.sourceTitle}.`;
+                }
+                if (data.url) {
+                    citation += ` ${data.url}`;
+                }
+            }
+
+            return citation;
+        }
+
+        // --- STREAMING_CHUNK:Form submission, list rendering, and local storage logic ---
+        // Form Submit Handler
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            let citationData = {};
+
+            if (currentInputMode === 'structured') {
+                // Structured Mode
+                const data = {
+                    type: sourceType.value,
+                    authors: document.getElementById('authors').value.trim(),
+                    title: document.getElementById('title').value.trim(),
+                    sourceTitle: document.getElementById('sourceTitle').value.trim(),
+                    year: document.getElementById('year').value.trim(),
+                    volume: document.getElementById('volume').value.trim(),
+                    issue: document.getElementById('issue').value.trim(),
+                    pages: document.getElementById('pages').value.trim(),
+                    url: document.getElementById('url').value.trim(),
+                    misc: document.getElementById('misc').value.trim()
+                };
+                
+                citationData = {
+                    id: Date.now().toString(),
+                    html: generateCitation(data),
+                    text: generateCitation(data).replace(/<i>/g, '').replace(/<\/i>/g, ''), // Plain text fallback
+                    misc: data.misc,
+                    // Store authors for sorting
+                    sortKey: data.authors.toLowerCase()
+                };
+            } else {
+                // Pasted Mode
+                const rawPaste = pastedTextInput.value.trim();
+                const miscText = document.getElementById('misc').value.trim();
+                
+                citationData = {
+                    id: Date.now().toString(),
+                    html: rawPaste, // Keep formatting of paste if possible, usually just string
+                    text: rawPaste,
+                    misc: miscText,
+                    sortKey: rawPaste.toLowerCase() // sort by first letter of paste
+                };
+            }
+
+            references.push(citationData);
+            
+            // Sort Alphabetically (APA standard)
+            references.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+            
+            saveToLocalStorage();
+            renderList();
+            
+            // Reset form
+            if(currentInputMode === 'structured') {
+                 form.reset();
+                 updateFormFields(); // Reset dynamic fields
+            } else {
+                pastedTextInput.value = '';
+                document.getElementById('misc').value = '';
+            }
+            
+            showToast('Citation added successfully!');
+        });
+
+        // --- Core UI Functions ---
+        function renderList() {
+            if (references.length === 0) {
+                emptyState.classList.remove('hidden');
+                referenceList.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            referenceList.classList.remove('hidden');
+            
+            referenceList.innerHTML = '';
+            
+            references.forEach((ref, index) => {
+                const item = document.createElement('div');
+                item.className = 'group relative p-4 mb-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow bg-white';
+                
+                // Construct HTML with hanging indent wrapper
+                let contentHtml = `<div class="hanging-indent pr-12 text-sm text-gray-800" id="ref-content-${ref.id}">${ref.html}</div>`;
+                
+                if (ref.misc) {
+                    contentHtml += `<div class="mt-2 inline-block bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded border border-indigo-100"><i class="fas fa-tag mr-1"></i>${ref.misc}</div>`;
+                }
+
+                item.innerHTML = `
+                    ${contentHtml}
+                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                        <button onclick="copySingle('${ref.id}')" class="bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded shadow-sm" title="Copy">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button onclick="deleteRef('${ref.id}')" class="bg-red-50 hover:bg-red-100 text-red-500 p-2 rounded shadow-sm" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                referenceList.appendChild(item);
+            });
+        }
+
+        // --- STREAMING_CHUNK:Clipboard, Export, Delete, and LocalStorage utilities ---
+        // Copy Individual
+        function copySingle(id) {
+            const contentDiv = document.getElementById(`ref-content-${id}`);
+            copyRichText(contentDiv.innerHTML, contentDiv.innerText);
+        }
+
+        // Copy All
+        copyAllBtn.addEventListener('click', () => {
+            if (references.length === 0) {
+                showToast('Nothing to copy.', false);
+                return;
+            }
+            
+            let htmlStr = '<div style="padding-left: 2em; text-indent: -2em; margin-bottom: 1em; line-height: 1.6;">';
+            htmlStr += references.map(r => r.html).join('</div><div style="padding-left: 2em; text-indent: -2em; margin-bottom: 1em; line-height: 1.6;">');
+            htmlStr += '</div>';
+
+            let plainStr = references.map(r => r.text).join('\n\n');
+            
+            copyRichText(htmlStr, plainStr);
+        });
+
+        // Advanced Copy Function (Attempts to preserve HTML formatting like italics)
+        function copyRichText(htmlStr, plainStr) {
+            const listener = function(ev) {
+                ev.preventDefault();
+                ev.clipboardData.setData('text/html', htmlStr);
+                ev.clipboardData.setData('text/plain', plainStr);
+            };
+            document.addEventListener('copy', listener);
+            document.execCommand('copy');
+            document.removeEventListener('copy', listener);
+            showToast('Copied to clipboard!');
+        }
+
+        // Export Function (Opens in new window for easy Word copy-paste)
+        exportBtn.addEventListener('click', () => {
+            if (references.length === 0) {
+                showToast('List is empty!', false);
+                return;
+            }
+
+            let exportHTML = `
+                <html>
+                <head>
+                    <title>References</title>
+                    <style>
+                        body { font-family: "Times New Roman", Times, serif; font-size: 12pt; margin: 1in; }
+                        h1 { text-align: center; font-size: 12pt; font-weight: normal; margin-bottom: 2em; }
+                        .reference {
+                            padding-left: 0.5in;
+                            text-indent: -0.5in;
+                            margin-bottom: 1em;
+                            line-height: 2; /* APA standard double spacing */
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>References</h1>
+                    ${references.map(r => `<div class="reference">${r.html}</div>`).join('\n')}
+                </body>
+                </html>
+            `;
+
+            let newWin = window.open('', 'References', 'width=800,height=600');
+            newWin.document.open();
+            newWin.document.write(exportHTML);
+            newWin.document.close();
+        });
+
+        // Delete Individual
+        window.deleteRef = function(id) {
+            references = references.filter(r => r.id !== id);
+            saveToLocalStorage();
+            renderList();
+            showToast('Reference removed.', false);
+        };
+
+        // Clear All
+        clearAllBtn.addEventListener('click', () => {
+            if (references.length > 0) {
+                if(confirm("Are you sure you want to clear all references?")) {
+                    references = [];
+                    saveToLocalStorage();
+                    renderList();
+                    showToast('List cleared.', false);
+                }
+            }
+        });
+
+        // Local Storage Utilities
+        function saveToLocalStorage() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(references));
+        }
+
+        function loadFromLocalStorage() {
+            const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (stored) {
+                try {
+                    references = JSON.parse(stored);
+                } catch (e) {
+                    references = [];
+                }
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, isSuccess = true) {
+            const toast = document.createElement('div');
+            const bgColor = isSuccess ? 'bg-emerald-600' : 'bg-red-500';
+            const icon = isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            toast.className = `${bgColor} text-white px-4 py-3 rounded shadow-lg flex items-center gap-3 toast-animate min-w-[250px]`;
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span class="text-sm font-medium">${message}</span>
+            `;
+            
+            const container = document.getElementById('toastContainer');
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Run Initialization
+        init();
+    </script>
+</body>
+</html>
